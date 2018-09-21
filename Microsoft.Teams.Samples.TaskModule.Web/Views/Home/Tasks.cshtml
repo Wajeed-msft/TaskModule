@@ -1,183 +1,72 @@
 ﻿@using Microsoft.Teams.Samples.TaskModule.Web.Helper;
-<div class="font-semibold font-title">
-    This is our first tab
-</div>
-<p>
-    Welcome to Microsoft Teams Hello World sample app (C#)
-    <div>
-        <button onclick="submit('html');">HTML Page</button>
-        <button onclick="submit('adaptivecard');">Adaptive Card</button>
-        <button onclick="submit('html completionBotId');">HTML - Send Result to Bot</button>
-        <button onclick="submit('adaptivecard completionBotId');">Adaptive Card - Send Result to Bot</button>
-        <br />
-        <br />
-        <a target="_blank" href="https://teams.microsoft.com/l/task/@(ApplicationSettings.MicrosoftAppId)?url=@(ApplicationSettings.BaseUrlEncoded)%2Fcustomform&height=medium&width=medium&title=TaskInfo&completionBotId=@(ApplicationSettings.MicrosoftAppId)">Deep link to HTML Page</a>
-    </div>
-</p>
 
-<script type="text/javascript">
+<div class="font-semibold font-title">Microsoft Teams Task Modules Demo</div>
+<p>
+    A task module allows Teams app developers to create one or more custom, modal experiences with custom code for their users, particularly useful for initiating and/or completing tasks using a GUI that does not litter a Teams conversation with superfluous,
+    intermediate task completion information.
+</p>
+<p>
+    Let's try it out!
+    <div style="text-align: center; margin-left: auto; margin-right: auto;">
+        <button class="button-primary" onclick="submit('youtube');">Youtube</button>
+        <button class="button-primary" onclick="submit('powerapp');">Power App</button>
+        <p></p>
+        <button class="button-primary" onclick="submit('customform');">Custom Form (results &rarr; tab)</button>
+        <p></p>
+        <button class="button-primary" onclick="submit('customform bot');">Custom Form (results &rarr; bot)</button>
+        <p></p>
+        <button class="button-primary" onclick="submit('adaptivecard');">Adaptive Card (results &rarr; tab)</button>
+        <p></p>
+        <button class="button-primary" onclick="submit('adaptivecard bot');">Adaptive Card (results &rarr; bot)</button>
+        <p></p>
+        <p></p>
+        <a target="_blank" href="@(ApplicationSettings.DeepLink)">Deep link to Custom Form Page</a>
+    </div>
+
+<script src="~/Scripts/teamsapp.js"></script>
+<script>
     microsoftTeams.initialize();
 
     submitHandler = (err, result) => {
-        console.log(`Submit handler - err: ${err}`);
-        alert("Result = " + JSON.stringify(result) + "\nError = " + JSON.stringify(err));
-        // console.log(`Submit handler - result\rName: ${result.name}\rEmail: ${result.email}\rFavorite book: ${result.favoriteBook}`);
-    };
-
-    function submit(type) {
-
-        let taskInfo = {
-            title: null,
-            height: null,
-            width: null,
-            url: null,
-            card: null,
-            fallbackUrl: null,
-            completionBotId: null,
+            console.log(`Submit handler - err: ${err}`);
+            alert("Result = " + JSON.stringify(result) + "\nError = " + JSON.stringify(err));
         };
 
-        taskInfo.title = "Task Module Demo";
-        taskInfo.height = "medium";
-        taskInfo.width = "medium";
+        function submit(type) {
 
-        var card = {
-            contentType: "application/vnd.microsoft.card.adaptive",
-            content: getCard()
+            let taskInfo = {
+                title: null,
+                height: null,
+                width: null,
+                url: null,
+                card: null,
+                fallbackUrl: null,
+                completionBotId: null,
+            };
+
+            taskInfo.title = "Task Module Demo";
+            taskInfo.height = "medium";
+            taskInfo.width = "medium";
+
+            if (type.includes('youtube'))
+                taskInfo.url = "@(ApplicationSettings.BaseUrl)" + "/youtube";
+            else if (type.includes('powerapp'))
+                taskInfo.url = "@(ApplicationSettings.BaseUrl)" + "/powerapp";
+            else if (type.includes('customform'))
+                taskInfo.url = "@(ApplicationSettings.BaseUrl)" + "/customform";
+            else {
+                taskInfo.card = {
+                    contentType: "application/vnd.microsoft.card.adaptive",
+                    content: getAdaptiveCard()
+                };
+            }
+
+            // Set fallback URL
+            taskInfo.fallbackUrl = taskInfo.url;
+
+            if (type.includes('bot'))
+                taskInfo.completionBotId = "@(ApplicationSettings.MicrosoftAppId)";
+
+            microsoftTeams.tasks.startTask(taskInfo, submitHandler);
         }
-
-        if (type.includes('html'))
-            taskInfo.url = "@(ApplicationSettings.BaseUrl)" +"/customform";
-        else
-            taskInfo.card = card;
-
-        if (type.includes('completionBotId'))
-            taskInfo.completionBotId = "@(ApplicationSettings.MicrosoftAppId)";
-
-        microsoftTeams.tasks.startTask(taskInfo, submitHandler);
-    }
-
-    function getCard() {
-        var card = {
-            "type": "AdaptiveCard",
-            "body": [
-                {
-                    "type": "Container",
-                    "items": [
-                        {
-                            "type": "TextBlock",
-                            "size": "Medium",
-                            "weight": "Bolder",
-                            "text": "Publish Adaptive Card schema"
-                        },
-                        {
-                            "type": "ColumnSet",
-                            "columns": [
-                                {
-                                    "type": "Column",
-                                    "items": [
-                                        {
-                                            "type": "Image",
-                                            "style": "Person",
-                                            "url": "https://pbs.twimg.com/profile_images/3647943215/d7f12830b3c17a5a9e4afcc370e3a37e_400x400.jpeg",
-                                            "size": "Small"
-                                        }
-                                    ],
-                                    "width": "auto"
-                                },
-                                {
-                                    "type": "Column",
-                                    "items": [
-                                        {
-                                            "type": "TextBlock",
-                                            "weight": "Bolder",
-                                            "text": "Matt Hidinger",
-                                            "wrap": true
-                                        },
-                                        {
-                                            "type": "TextBlock",
-                                            "spacing": "None",
-                                            "text": "Created {{DATE(2017-02-14T06:08:39Z,SHORT)}}",
-                                            "isSubtle": true,
-                                            "wrap": true
-                                        }
-                                    ],
-                                    "width": "stretch"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "type": "Container",
-                    "items": [
-                        {
-                            "type": "TextBlock",
-                            "text": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
-                            "wrap": true
-                        },
-                        {
-                            "type": "FactSet",
-                            "facts": [
-                                {
-                                    "title": "Board:",
-                                    "value": "Adaptive Card"
-                                },
-                                {
-                                    "title": "List:",
-                                    "value": "Backlog"
-                                },
-                                {
-                                    "title": "Assigned to:",
-                                    "value": "Matt Hidinger"
-                                },
-                                {
-                                    "title": "Due date:",
-                                    "value": "Not set"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ],
-            "actions": [
-                {
-                    "type": "Action.ShowCard",
-                    "title": "Set due date",
-                    "card": {
-                        "type": "AdaptiveCard",
-                        "style": "emphasis",
-                        "body": [
-                            {
-                                "type": "Input.Date",
-                                "id": "dueDate"
-                            },
-                            {
-                                "type": "Input.Text",
-                                "id": "comment",
-                                "placeholder": "Add a comment",
-                                "isMultiline": true
-                            }
-                        ],
-                        "actions": [
-                            {
-                                "type": "Action.Submit",
-                                "title": "OK",
-                                "data": {
-                                    "actester": true
-                                }
-                            }
-                        ]
-                    }
-                },
-                {
-                    "type": "Action.OpenUrl",
-                    "title": "View",
-                    "url": "http://adaptivecards.io"
-                }
-            ],
-            "version": "1.0"
-        };
-        return card;
-    }
 </script>
-

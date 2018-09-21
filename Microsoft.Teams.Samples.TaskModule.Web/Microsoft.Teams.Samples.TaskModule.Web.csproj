@@ -223,10 +223,13 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helper\AdaptiveCardHelper.cs" />
-    <Compile Include="Helper\TempStorage.cs" />
+    <Compile Include="Helper\ApplicationSettings.cs" />
+    <Compile Include="Models\TaskModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\TasksViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\custom.css" />
     <Content Include="Content\msteams-16.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -257,6 +260,9 @@
     <Content Include="Views\Home\Configure.cshtml" />
     <Content Include="Resources\Cards\AdaptiveCard.json" />
     <None Include="Properties\PublishProfiles\taskmodulecsharpdemo - Web Deploy.pubxml" />
+    <Content Include="Views\Home\YouTube.cshtml" />
+    <Content Include="Views\Shared\_EmbedPage.cshtml" />
+    <Content Include="Views\Home\PowerApp.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Connector;
+using Microsoft.Bot.Sample.SimpleEchoBot;
+using Microsoft.Teams.Samples.TaskModule.Web.Helper;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Connector;
-using Microsoft.Bot.Sample.SimpleEchoBot;
-using Microsoft.Teams.Samples.TaskModule.Web.Helper;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Teams.Samples.TaskModule.Web.Controllers
 {
@@ -21,46 +20,57 @@ namespace Microsoft.Teams.Samples.TaskModule.Web.Controllers
             {
                 await Conversation.SendAsync(activity, () => new RootDialog());
             }
-
             else if (activity.Type == ActivityTypes.Invoke)
             {
-                if (activity.Name == "task/fetch")
-                {
-
-                    // TODO: Convert this to helpers once available.
-                    JObject taskEnvelope = new JObject();
-
-                    JObject taskObj = new JObject();
-                    JObject taskInfo = new JObject();
-
-                    taskObj["value"] = taskInfo;
-                    taskObj["type"] = "continue";
-                    if (activity.Value.ToString().Contains("html"))
-                        taskInfo["url"] = ApplicationSettings.BaseUrl + "/customform";
-                    else
-                        taskInfo["card"] = JObject.FromObject(AdaptiveCardHelper.GetAdaptiveCard());
-
-                    taskInfo["title"] = "Test";
-
-                    taskEnvelope["task"] = taskObj;
-
-                    return Request.CreateResponse(HttpStatusCode.OK, taskEnvelope);
-
-                }
-                else if (activity.Name == "task/submit")
-                {
-                    Console.WriteLine(activity.Value);
-
-                    ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-                    Activity reply = activity.CreateReply("Received = " + activity.Value.ToString());
-                    connector.Conversations.ReplyToActivity(reply);
-                }
+                return HandleInvokeMessages(activity);
             }
             else
             {
                 HandleSystemMessage(activity);
             }
             return new HttpResponseMessage(HttpStatusCode.Accepted);
+        }
+
+        private HttpResponseMessage HandleInvokeMessages(Activity activity)
+        {
+            var activityValue = activity.Value.ToString();
+            if (activity.Name == "task/fetch")
+            {
+                var action = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.FetchActionDetails>(activityValue);
+                Models.TaskInfo taskInfo = new Models.TaskInfo()
+                {
+                    Title = "Task Module",
+                    Height = "medium",
+                    Width = "medium"
+                };
+
+                // Check the card vs html
+                if (action.AdditionalInfo.Contains("html"))
+                    taskInfo.Url = ApplicationSettings.BaseUrl + "/customform";
+                else
+                    taskInfo.Card = AdaptiveCardHelper.GetAdaptiveCard();// Attachment AdaptiveCardHelper.GetAdaptiveCard();
+
+                Models.TaskEnvelope taskEnvelope = new Models.TaskEnvelope
+                {
+                    Task = new Models.Task()
+                    {
+                        Type = Models.TaskType.Continue,
+                        TaskInfo = taskInfo
+                    }
+                };
+                return Request.CreateResponse(HttpStatusCode.OK, taskEnvelope);
+
+            }
+            else if (activity.Name == "task/submit")
+            {
+                Console.WriteLine(activity.Value);
+
+                ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
+                Activity reply = activity.CreateReply("Received = " + activity.Value.ToString());
+                connector.Conversations.ReplyToActivity(reply);
+            }
+            return new HttpResponseMessage(HttpStatusCode.Accepted);
+
 
         }
 
